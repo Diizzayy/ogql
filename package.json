@@ -1,0 +1,71 @@
+{
+  "name": "ohmygql",
+  "version": "1.0.6",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./plugin": {
+      "require": "./dist/plugin.cjs",
+      "import": "./dist/plugin.mjs"
+    },
+    "./utils": {
+      "require": "./dist/utils.cjs",
+      "import": "./dist/utils.mjs"
+    },
+    "./*": "./*"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "*.d.ts"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "vitest dev",
+    "prepack": "pnpm build",
+    "prepare": "unbuild --stub",
+    "lint": "eslint --ext .ts .",
+    "test": "pnpm lint && vitest run --coverage"
+  },
+  "keywords": [
+    "gql",
+    "graphql",
+    "ohmygql",
+    "ohmyfetch",
+    "graphql-client",
+    "codegen",
+    "graphql-code-generator"
+  ],
+  "author": {
+    "name": "Diizzayy <https://diizzayy.com>",
+    "url": "https://github.com/diizzayy"
+  },
+  "repository": "diizzayy/ohmygql",
+  "license": "MIT",
+  "dependencies": {
+    "@graphql-codegen/cli": "^2.11.6",
+    "@graphql-codegen/plugin-helpers": "^2.6.2",
+    "@graphql-codegen/typescript": "^2.7.3",
+    "@graphql-codegen/typescript-operations": "^2.5.3",
+    "@graphql-codegen/visitor-plugin-common": "^2.12.1",
+    "graphql": "^16.6.0",
+    "graphql-tag": "^2.12.6",
+    "ohmyfetch": "^0.4.18",
+    "scule": "^0.3.2"
+  },
+  "devDependencies": {
+    "@nuxtjs/eslint-config-typescript": "^10.0.0",
+    "@vitest/coverage-c8": "^0.22.1",
+    "eslint": "^8.22.0",
+    "unbuild": "^0.8.9",
+    "vite": "^3.0.9",
+    "vitest": "^0.22.1"
+  },
+  "packageManager": "pnpm@7.9.5"
+}

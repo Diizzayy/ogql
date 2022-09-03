@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "esModuleInterop": true,
+      "strict": true,
+      "noImplicitAny": true,
+      "paths": {
+        "ohmygql/plugin": ["./src/plugin"],
+        "ohmygql": ["./src"]
+      },
+    },
+    "exclude": [
+      "node_modules",
+      "test"
+    ]
+  }

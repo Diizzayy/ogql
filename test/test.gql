@@ -1,0 +1,5 @@
+query todo { todos { id text } }
+
+mutation createTodo($todo: TodoInput!) { createTodo(todo: $todo) { id text } }
+
+subscription todoAdded { todoAdded { id text } }
