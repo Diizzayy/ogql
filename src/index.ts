@@ -8,12 +8,13 @@ import { GqlError } from './types'
 
 export * from './types'
 
-export type GqlMiddleware = {
-  onRequest?: FetchOptions['onRequest']
-  onResponse?: FetchOptions['onResponse'];
-  onRequestError?: FetchOptions['onRequestError'];
-  onResponseError?: FetchOptions['onResponseError'];
+export type GqlMiddleware <T extends object = object> = {
+  onRequest?: T extends Array<any> ? FetchOptions['onRequest'][] : FetchOptions['onRequest']
+  onResponse?: T extends Array<any> ? FetchOptions['onResponse'][] : FetchOptions['onResponse']
+  onRequestError?: T extends Array<any> ? FetchOptions['onRequestError'][] : FetchOptions['onRequestError']
+  onResponseError?: T extends Array<any> ? FetchOptions['onResponseError'][] : FetchOptions['onResponseError']
 };
+type GqlMiddlewareKeys = keyof GqlMiddleware
 
 export const GqlClient = (input: string | {
   host: string,
@@ -44,14 +45,17 @@ export const GqlClient = (input: string | {
 
   const setHeaders = (headers?: FetchOptions['headers']) => setOptions({ headers })
 
+  const middlewares: GqlMiddleware<any[]> = { }
   const setMiddleware = (mw: GqlMiddleware) => {
     if (!mw) { return }
 
     opts.middleware = opts.middleware || {}
 
-    for (const [k, v] of Object.entries(mw)) {
+    for (const [k, v] of Object.entries(mw) as [GqlMiddlewareKeys, any][]) {
+      middlewares[k] = middlewares[k] || []
+
       // @ts-ignore
-      opts.middleware[k] = v
+      middlewares[k].push(v)
     }
   }
 
@@ -72,6 +76,15 @@ export const GqlClient = (input: string | {
       ...fetchOptions?.headers
     }
 
+    const middleware: GqlMiddleware = { }
+    for (const mw of Object.keys(middlewares) as GqlMiddlewareKeys[]) {
+      middleware[mw] = async (ctx: any) => {
+        if (opts.middleware?.[mw]) { middlewares[mw]?.unshift(opts.middleware[mw]) }
+        // @ts-ignore
+        await Promise.all(middlewares[mw]?.filter(Boolean).map((fn: () => any) => fn(ctx)))
+      }
+    }
+
     const res = await $fetch.raw<T>(opts.host, {
       method: 'POST',
       ...fetchOptions,
@@ -79,7 +92,7 @@ export const GqlClient = (input: string | {
         'Content-Type': 'application/json',
         ...fetchOptions?.headers
       },
-      ...opts?.middleware,
+      ...middleware,
       body: { query, variables }
     }).catch((e: FetchError<T>) => e)
 
