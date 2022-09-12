@@ -67,8 +67,7 @@ export const mockPlugin = (operations: Record<string, string>) => {
   }
 
   return [
-    'import { GqlClient } from \'ohmygql\'',
-    'export function gqlSdk (client: GqlClient) {',
+    'export function gqlSdk (client) {',
     '  return {',
     GqlFunctions.join(',\n'),
     '  }',
