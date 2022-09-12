@@ -1,7 +1,7 @@
 import { it, expect, describe } from 'vitest'
 
-import type { TodoQuery } from './output/gql'
 import { GqlClient } from '../src'
+import type { TodoQuery } from './output/gql'
 
 describe('ohmygql', async () => {
   // @ts-ignore
@@ -12,7 +12,7 @@ describe('ohmygql', async () => {
   })
 
   const client = gqlSdk(instance)
-  
+
   it('use gql client', async () => {
     const { todos } = await client.todo()
 
@@ -40,7 +40,7 @@ describe('ohmygql', async () => {
   it('fails with invalid field', async () => {
     const result = await instance.execute('query { todos { idd text } }').catch(e => e)
 
-    expect(result?.gqlErrors[0].message).toEqual(`Cannot query field "idd" on type "Todo". Did you mean "id"?`)
+    expect(result?.gqlErrors[0].message).toEqual('Cannot query field "idd" on type "Todo". Did you mean "id"?')
   })
 
   it('returns operation type and name in error response', async () => {
@@ -49,16 +49,18 @@ describe('ohmygql', async () => {
     expect(result?.operation).toContain({ type: 'query', name: 'demo' })
   })
 
-  it('authenticated request to github api', async () => {
-    const github = GqlClient({ 
-      host: 'https://api.github.com/graphql',
-      headers: {
-        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
-      }
+  if (process.env.GITHUB_ACTIONS) {
+    it('authenticated request to github api', async () => {
+      const github = GqlClient({
+        host: 'https://api.github.com/graphql',
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
+        }
+      })
+
+      const result = await github.execute<{ viewer: { login: string } }>('query { viewer { id login } }')
+
+      expect(result?.viewer?.login).toEqual('github-actions[bot]')
     })
-
-    const result = await github.execute<{ viewer: { login: string } }>('query { viewer { id login } }')
-
-    expect(result?.viewer?.login).toEqual('github-actions[bot]')
-  })
+  }
 })
