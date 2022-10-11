@@ -1,4 +1,6 @@
-query todo { todos { id text } }
+query getTodos { todos { id text } }
+
+query getTodo($id: Int!) { todo (id: $id) { id text } }
 
 mutation createTodo($todo: TodoInput!) { createTodo(todo: $todo) { id text } }
 

@@ -18,6 +18,7 @@ export type GqlMiddleware = {
 export const GqlClient = (input: string | {
   host: string,
   middleware?: GqlMiddleware,
+  useGETForQueries?: boolean,
   headers?: Record<string, string>
 }) => {
   const opts = typeof input === 'string' ? { host: input } : input
@@ -72,15 +73,22 @@ export const GqlClient = (input: string | {
       ...fetchOptions?.headers
     }
 
+    const useGET = opts?.useGETForQueries && extractOperation(query)?.type === 'query'
+
+    const reqOptions = {
+      query,
+      ...(variables && { variables: !useGET ? variables : JSON.stringify(variables) })
+    }
+
     const res = await $fetch.raw<T>(opts.host, {
-      method: 'POST',
+      ...(!useGET && { method: 'POST' }),
       ...fetchOptions,
       headers: {
         'Content-Type': 'application/json',
         ...fetchOptions?.headers
       },
       ...opts?.middleware,
-      body: { query, variables }
+      ...(!useGET ? { body: reqOptions } : { params: reqOptions })
     }).catch((e: FetchError<T>) => e)
 
     if (res instanceof FetchError || res?._data?.errors) {
