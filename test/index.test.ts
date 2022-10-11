@@ -1,7 +1,7 @@
 import { it, expect, describe } from 'vitest'
 
 import { GqlClient } from '../src'
-import type { TodoQuery } from './output/gql'
+import type { GetTodosQuery } from './output/gql'
 
 describe('ohmygql', async () => {
   // @ts-ignore
@@ -13,16 +13,22 @@ describe('ohmygql', async () => {
 
   const client = gqlSdk(instance)
 
-  it('use gql client', async () => {
-    const { todos } = await client.todo()
+  it('retrieve all todos', async () => {
+    const { todos } = await client.getTodos()
 
     const firstTodo = todos.find(t => t.id === 1)
 
     expect(firstTodo?.text).toEqual('Watch game of thrones')
   })
 
+  it('retrieve todo with id of 1', async () => {
+    const { todo } = await client.getTodo({ id: 1 })
+
+    expect(todo?.text).toEqual('Watch game of thrones')
+  })
+
   it('basic query', async () => {
-    const result = await instance.execute('query { todos { id text } }').catch(console.error) as TodoQuery
+    const result = await instance.execute('query { todos { id text } }').catch(console.error) as GetTodosQuery
 
     const firstTodo = result?.todos.find(t => t.id === 1)
 
