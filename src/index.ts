@@ -25,6 +25,12 @@ export const GqlClient = (input: string | {
 
   let fetchOptions: FetchOptions<'json'> = {}
 
+  const setHost = (host: string) => {
+    if (!host) { return }
+
+    opts.host = host
+  }
+
   const setOptions = (opts?: null | Pick<FetchOptions<'json'>, 'retry' | 'headers' | 'mode' | 'cache' | 'credentials'>) => {
     if (!opts) {
       fetchOptions = {}
@@ -104,7 +110,7 @@ export const GqlClient = (input: string | {
     return res._data?.data
   }
 
-  return { execute, setOptions, setHeaders, setMiddleware }
+  return { execute, setHost, setOptions, setHeaders, setMiddleware }
 }
 
 export type GqlClient = ReturnType<typeof GqlClient>
