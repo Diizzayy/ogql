@@ -96,7 +96,7 @@ export const GqlClient = (input: string | {
       const response = res instanceof FetchError ? res.response : res
       const status = response?.status
 
-      const message = gqlErrors?.map(e => e.message).join(', ') || `${status} ${response?.statusText}`
+      const message = gqlErrors?.map(e => e.message).join(', ') || (response && `${status} ${response?.statusText}`) || 'Fetch failed'
 
       throw new GqlError(message, { status, gqlErrors, operation: extractOperation(query) })
     }
