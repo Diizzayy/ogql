@@ -2,9 +2,11 @@ import { print } from 'graphql'
 import { $fetch, FetchError } from 'ohmyfetch'
 import type { FetchOptions } from 'ohmyfetch'
 import type { DocumentNode } from 'graphql'
+import type { ClientOptions, ExecutionResult } from 'graphql-ws'
 import type { GqlResponse } from './types'
 import { extractOperation } from './utils'
 import { GqlError } from './types'
+import wsClient from './ws'
 
 export * from './types'
 
@@ -15,8 +17,51 @@ export type GqlMiddleware = {
   onResponseError?: FetchOptions['onResponseError'];
 };
 
+export type WSClientOptions = Partial<Omit<ClientOptions, 'url'>>
+type WSNextHandler<T = any> = (result: ExecutionResult<T>) => void
+type WSErrorHandler = (err: Error) => void
+export type WSOutput <T = any> = {
+  /**
+   * Restart the WebSocket connection.
+   */
+  restart: () => void
+
+  /**
+   * Initiate the WebSocket connection and listens for events.
+   */
+  subscribe: () => void
+
+  /**
+   * Destroy the WebSocket connection.
+   */
+  unsubscribe: () => void
+
+  /**
+   * onNext is called with the result of the subscription.
+   *
+   * Must be called before `subscribe`.
+   *
+   * @param {WSNextHandler<T>} cb - The callback to be called when a new result is received.
+   */
+  onNext: (cb: WSNextHandler<T>) => void
+
+  /**
+   * onError accepts a callback that is triggered when an error occurs.
+   *
+   * Must be called before `subscribe`.
+   */
+  onError: (cb: WSErrorHandler) => void
+
+  /**
+   * Triggers when the WebSocket connection has completed.
+   */
+  onComplete: (cb: () => void) => void
+}
+
 export const GqlClient = (input: string | {
   host: string,
+  wsHost?: string,
+  wsOptions?: WSClientOptions,
   middleware?: GqlMiddleware,
   useGETForQueries?: boolean,
   headers?: Record<string, string>
@@ -110,7 +155,46 @@ export const GqlClient = (input: string | {
     return res._data?.data
   }
 
-  return { execute, setHost, setOptions, setHeaders, setMiddleware }
+  function subscribe<T = any>(opts: { query: string | DocumentNode, variables?: Record<string, any> | null, options?: WSClientOptions }): WSOutput<T>
+  function subscribe<T = any> (query: string | DocumentNode, variables?: Record<string, any> | null, options?: WSClientOptions): WSOutput<T>
+
+  function subscribe<T = any> (...args: any[]): WSOutput<T> {
+    let query: string | DocumentNode = args?.[0]?.query || args?.[0]
+    query = typeof query === 'string' ? query : print(query)
+
+    const variables = args?.[0]?.variables || args?.[1]
+
+    const options = args?.[0]?.options || args?.[2]
+
+    const url = opts?.wsHost || opts?.host.replace(/^http/, 'ws').replace(/^https/, 'wss')
+
+    if (!url || !url.startsWith('ws')) { throw new Error('Invalid websocket host') }
+
+    const client = wsClient({ url, ...opts?.wsOptions, ...options })
+
+    let unsubscribe = () => {}
+    let onNext: WSNextHandler<T>
+    let onError: WSErrorHandler
+    let onComplete: () => void
+
+    return {
+      restart: () => client.restart(),
+      unsubscribe: () => unsubscribe(),
+      onNext: cb => (onNext = cb),
+      onError: cb => (onError = cb),
+      onComplete: cb => (onComplete = cb),
+      subscribe: () => {
+        // @ts-expect-error 'DocumentNode' is not assignable to type 'string'
+        unsubscribe = client.subscribe({ query, variables }, {
+          next: onNext || (() => {}),
+          error: onError || (() => {}),
+          complete: onComplete || (() => {})
+        })
+      }
+    }
+  }
+
+  return { execute, subscribe, setHost, setOptions, setHeaders, setMiddleware }
 }
 
 export type GqlClient = ReturnType<typeof GqlClient>
