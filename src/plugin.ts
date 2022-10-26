@@ -32,19 +32,26 @@ export const plugin: PluginFunction = (schema, documents, config) => {
   for (const entry of operations) {
     const name = entry.name?.value
 
-    if (!name || entry.operation === 'subscription') { continue }
+    if (!name) { continue }
 
     const opName = upperFirst(name) + upperFirst(entry.operation)
 
-    let func = `    ${name}: <T extends ${opName}, V extends ${opName}Variables> (variables?: V): Promise<T> =>`
-    func += ` client.execute<T>(${upperFirst(name)}Document, variables)`
+    let func = `    ${name}: <T extends ${opName}, V extends ${opName}Variables> (variables?: null | V`
+
+    if (entry.operation !== 'subscription') {
+      func += `): Promise<T> => client.execute<T>(${upperFirst(name)}Document, variables)`
+    } else {
+      func += `, options?: WSClientOptions): WSOutput<T> => client.subscribe(${upperFirst(name)}Document, variables, options)`
+    }
 
     GqlFunctions.push(func)
   }
 
+  const importList = ['GqlClient', ...((operations.some(o => o.operation === 'subscription') && ['WSOutput', 'WSClientOptions']) || [])]
+
   return {
     prepend: [
-      'import { GqlClient } from \'ohmygql\'',
+      `import type { ${importList.join(', ')} } from 'ohmygql'`,
       ...visitor.getImports()
     ],
     content: [
@@ -63,7 +70,11 @@ export const mockPlugin = (operations: Record<string, string>) => {
   const GqlFunctions: string[] = []
 
   for (const [k, v] of Object.entries(operations)) {
-    GqlFunctions.push(`    ${k}: (variables = undefined) => client.execute(\`${v}\`, variables)`)
+    if (!v.includes('subscription')) {
+      GqlFunctions.push(`    ${k}: (variables = undefined) => client.execute(\`${v}\`, variables)`)
+    } else {
+      GqlFunctions.push(`    ${k}: (variables = undefined, options = undefined) => client.subscribe(\`${v}\`, variables, options)`)
+    }
   }
 
   return [
