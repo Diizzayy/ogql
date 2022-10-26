@@ -37,13 +37,13 @@ export type WSOutput <T = any> = {
   unsubscribe: () => void
 
   /**
-   * onNext is called with the result of the subscription.
+   * onResult is called with the result of the subscription.
    *
    * Must be called before `subscribe`.
    *
    * @param {WSNextHandler<T>} cb - The callback to be called when a new result is received.
    */
-  onNext: (cb: WSNextHandler<T>) => void
+   onResult: (cb: WSNextHandler<T>) => void
 
   /**
    * onError accepts a callback that is triggered when an error occurs.
@@ -173,20 +173,20 @@ export const GqlClient = (input: string | {
     const client = wsClient({ url, ...opts?.wsOptions, ...options })
 
     let unsubscribe = () => {}
-    let onNext: WSNextHandler<T>
     let onError: WSErrorHandler
+    let onResult: WSNextHandler<T>
     let onComplete: () => void
 
     return {
       restart: () => client.restart(),
       unsubscribe: () => unsubscribe(),
-      onNext: cb => (onNext = cb),
       onError: cb => (onError = cb),
+      onResult: cb => (onResult = cb),
       onComplete: cb => (onComplete = cb),
       subscribe: () => {
         // @ts-expect-error 'DocumentNode' is not assignable to type 'string'
         unsubscribe = client.subscribe({ query, variables }, {
-          next: onNext || (() => {}),
+          next: onResult || (() => {}),
           error: onError || (() => {}),
           complete: onComplete || (() => {})
         })
