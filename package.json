@@ -37,7 +37,7 @@
     "gql",
     "graphql",
     "ohmygql",
-    "ohmyfetch",
+    "ofetch",
     "graphql-client",
     "codegen",
     "graphql-code-generator"
@@ -57,7 +57,7 @@
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
     "graphql-ws": "^5.11.2",
-    "ohmyfetch": "^0.4.21",
+    "ofetch": "^1.0.0",
     "scule": "^1.0.0"
   },
   "devDependencies": {
@@ -69,5 +69,5 @@
     "vitest": "^0.25.2",
     "ws": "^8.11.0"
   },
-  "packageManager": "pnpm@7.12.2"
+  "packageManager": "pnpm@7.17.0"
 }

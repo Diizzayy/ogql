@@ -1,6 +1,6 @@
 import { print } from 'graphql'
-import { $fetch, FetchError } from 'ohmyfetch'
-import type { FetchOptions } from 'ohmyfetch'
+import { $fetch, FetchError } from 'ofetch'
+import type { FetchOptions } from 'ofetch'
 import type { DocumentNode } from 'graphql'
 import type { ClientOptions, ExecutionResult } from 'graphql-ws'
 import type { GqlResponse } from './types'
