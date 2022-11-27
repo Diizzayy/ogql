@@ -6,8 +6,8 @@
     "esModuleInterop": true,
     "strict": true,
     "paths": {
-      "ohmygql/plugin": ["./src/plugin"],
-      "ohmygql": ["./src"]
+      "ogql/plugin": ["./src/plugin"],
+      "ogql": ["./src"]
     }
   },
   "exclude": ["node_modules"]

@@ -3,7 +3,7 @@ import { it, expect, describe } from 'vitest'
 import { GqlClient } from '../src'
 import type { GetTodosQuery } from './output/gql'
 
-describe('ohmygql', async () => {
+describe('ogql', async () => {
   // @ts-ignore
   const { gqlSdk } = await import('./output/gql')
 

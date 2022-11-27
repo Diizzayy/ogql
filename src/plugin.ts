@@ -51,7 +51,7 @@ export const plugin: PluginFunction = (schema, documents, config) => {
 
   return {
     prepend: [
-      `import type { ${importList.join(', ')} } from 'ohmygql'`,
+      `import type { ${importList.join(', ')} } from 'ogql'`,
       ...visitor.getImports()
     ],
     content: [

@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   resolve: {
     alias: {
-      ohmygql: resolve('./src/')
+      ogql: resolve('./src/')
     }
   },
   test: {

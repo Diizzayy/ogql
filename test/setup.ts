@@ -4,9 +4,9 @@ import { generate } from '@graphql-codegen/cli'
 const outputFile = fileURLToPath(new URL('./output/gql.ts', import.meta.url).href)
 
 const pluginLoader = (n: string) => {
-  if (n === '@graphql-codegen/ohmygql/plugin') {
+  if (n === '@graphql-codegen/ogql/plugin') {
     // @ts-ignore
-    return Promise.resolve(import('ohmygql/plugin'))
+    return Promise.resolve(import('ogql/plugin'))
   }
 
   return Promise.resolve(import(n))
@@ -21,7 +21,7 @@ await generate({
   pluginLoader,
   generates: {
     [outputFile]: {
-      plugins: ['typescript', 'typescript-operations', 'ohmygql/plugin']
+      plugins: ['typescript', 'typescript-operations', 'ogql/plugin']
     }
   }
 })

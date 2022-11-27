@@ -1,6 +1,6 @@
 {
-  "name": "ohmygql",
-  "version": "1.0.11",
+  "name": "ogql",
+  "version": "0.0.1",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -36,7 +36,7 @@
   "keywords": [
     "gql",
     "graphql",
-    "ohmygql",
+    "ogql",
     "ofetch",
     "graphql-client",
     "codegen",
@@ -46,7 +46,7 @@
     "name": "Diizzayy <https://diizzayy.com>",
     "url": "https://github.com/diizzayy"
   },
-  "repository": "diizzayy/ohmygql",
+  "repository": "diizzayy/ogql",
   "license": "MIT",
   "dependencies": {
     "@graphql-codegen/cli": "2.13.12",
