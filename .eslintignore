@@ -1,3 +1,4 @@
 dist
+coverage
 test/output
 node_modules

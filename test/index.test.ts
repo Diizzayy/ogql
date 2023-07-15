@@ -1,3 +1,4 @@
+import WS from 'ws'
 import { it, expect, describe } from 'vitest'
 
 import { GqlClient } from '../src'
@@ -8,7 +9,8 @@ describe('ogql', async () => {
   const { gqlSdk } = await import('./output/gql')
 
   const instance = GqlClient({
-    host: 'https://nuxt-gql-server-2gl6xp7kua-ue.a.run.app/query'
+    host: 'https://nuxt-gql-server-2gl6xp7kua-ue.a.run.app/query',
+    wsOptions: { webSocketImpl: WS }
   })
 
   const client = gqlSdk(instance)
@@ -41,6 +43,27 @@ describe('ogql', async () => {
     const result = await client.createTodo({ todo: { text } })
 
     expect(result.createTodo.text).toEqual(text)
+  })
+
+  it('basic subscription', async () => {
+    const { subscribe, onResult } = client.todoAdded()
+
+    const unsubscribe = await subscribe()
+
+    const results: string[] = []
+    onResult((r) => {
+      if (!r?.data?.todoAdded?.text) { return }
+
+      results.push(r.data.todoAdded.text)
+    })
+
+    const text = Math.random().toString(36).substring(7)
+
+    await client.createTodo({ todo: { text } })
+
+    unsubscribe()
+
+    expect(results).toContainEqual(text)
   })
 
   it('fails with invalid field', async () => {

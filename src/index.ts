@@ -29,7 +29,7 @@ export type WSOutput <T = any> = {
   /**
    * Initiate the WebSocket connection and listens for events.
    */
-  subscribe: () => void
+  subscribe: () => Promise<() => void>
 
   /**
    * Destroy the WebSocket connection.
@@ -159,11 +159,10 @@ export const GqlClient = (input: string | {
   function subscribe<T = any> (query: string | DocumentNode, variables?: Record<string, any> | null, options?: WSClientOptions): WSOutput<T>
 
   function subscribe<T = any> (...args: any[]): WSOutput<T> {
-    let query: string | DocumentNode = args?.[0]?.query || args?.[0]
+    let query: string = args?.[0]?.query || args?.[0]
     query = typeof query === 'string' ? query : print(query)
 
     const variables = args?.[0]?.variables || args?.[1]
-
     const options = args?.[0]?.options || args?.[2]
 
     const url = opts?.wsHost || opts?.host.replace(/^http/, 'ws').replace(/^https/, 'wss')
@@ -183,14 +182,27 @@ export const GqlClient = (input: string | {
       onError: cb => (onError = cb),
       onResult: cb => (onResult = cb),
       onComplete: cb => (onComplete = cb),
-      subscribe: () => {
-        // @ts-expect-error 'DocumentNode' is not assignable to type 'string'
+      subscribe: () => new Promise((resolve) => {
         unsubscribe = client.subscribe({ query, variables }, {
-          next: onResult || (() => {}),
-          error: onError || (() => {}),
-          complete: onComplete || (() => {})
+          next: (result: ExecutionResult<T>) => {
+            if (!onResult || typeof onResult !== 'function') { return }
+
+            onResult(result)
+          },
+          error: (err: Error) => {
+            if (!onError || typeof onError !== 'function') { return }
+
+            onError(err)
+          },
+          complete: () => {
+            if (!onComplete || typeof onComplete !== 'function') { return }
+
+            onComplete()
+          }
         })
-      }
+
+        client.on('connected', () => resolve(unsubscribe))
+      })
     }
   }
 

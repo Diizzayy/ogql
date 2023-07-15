@@ -21,7 +21,7 @@ export type GqlResponse<T = any> = {
 }
 
 export class GqlError extends Error {
-  name: 'GqlError' = 'GqlError'
+  name = 'GqlError' as const
   status?: number
   operation?: GqlOperation
   gqlErrors?: GraphQLError[] | undefined
